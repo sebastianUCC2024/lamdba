@@ -134,7 +134,7 @@ exports.handler = async (event) => {
 //         }
 //     ]
 // }
-
+// jajajajaj
 // 1. eliminar base de datos 
 // 2. Lambda -> Quitar la VPC asociada a la funcion Lambda
 // 3. VPC -> quitar la puerta de enlace y luego eliminar
