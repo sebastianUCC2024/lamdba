@@ -1,0 +1,35 @@
+name: Deploy Lambda RDS
+
+on: #Define cuándo debe ejecutarse este archivo.
+  push: #Indica que se activará al subir cambios.
+    branches:
+      - main  # Se activa cuando haces push a la rama principal
+
+jobs: #la lista de tareas.
+  deploy: #Es el nombre que le damos a este grupo de tareas
+    runs-on: ubuntu-latest #GitHub enciende una computadora virtual con Linux (Ubuntu) totalmente gratis por unos segundos para procesar tu código.
+    steps:
+      - name: Checkout del código 
+        uses: actions/checkout@v3 #Como la computadora de GitHub está vacía, este comando le dice: "Descarga una copia de mi código de este repositorio en tu disco duro".
+
+      - name: Configurar credenciales de AWS
+        uses: aws-actions/configure-aws-credentials@v5 #Prepara la conexión con Amazon.
+        with: #GitHub toma las llaves secretas que guardaste en los ajustes y las usa para loguearse en tu cuenta de AWS
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1 # Verifica que tu Lambda esté en us-east-1
+
+      - name: Instalar dependencias
+        # Esto asegura que las librerías como mysql2 se incluyan en el despliegue
+        run: npm install  #Ejecuta el comando para descargar las librerías necesarias (como mysql2). Esto crea la carpeta node_modules dentro de la computadora de GitHub.
+
+      - name: Crear paquete ZIP
+        # Empaquetamos el index.js y la carpeta node_modules
+        # Excluimos archivos innecesarios para que el zip sea ligero
+        run: zip -r function.zip index.js node_modules
+
+      - name: Desplegar en Lambda
+        run: |
+          aws lambda update-function-code \ 
+            --function-name Lambda-RDS \
+            --zip-file fileb://function.zip
